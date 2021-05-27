@@ -1,5 +1,6 @@
 package ch.umb.curo.starter.controller
 
+import ch.umb.curo.starter.models.response.CuroUser
 import ch.umb.curo.starter.models.response.CuroUserResponse
 import ch.umb.curo.starter.service.CuroUserService
 import org.springframework.web.bind.annotation.RestController
@@ -15,5 +16,13 @@ class DefaultUserController(
                           memberOfGroup: ArrayList<String>,
                           attributes: ArrayList<String>): CuroUserResponse {
         return curoUserService.getUsers(emailLike, lastnameLike, firstnameLike, memberOfGroup, attributes)
+    }
+
+    override fun getUser(id: String): CuroUser {
+        return curoUserService.getUser(id)
+    }
+
+    override fun getCurrentUser(): CuroUser {
+        return curoUserService.getCurrentUser()
     }
 }

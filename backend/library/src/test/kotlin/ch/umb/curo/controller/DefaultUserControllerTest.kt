@@ -93,4 +93,36 @@ class DefaultUserControllerTest {
         assert(response.any { it.id == "sahra_doe" })
         assert(response.any { it.id == "richard_m_nunez" })
     }
+
+    @Test
+    fun `getUser() - loading user by id should work`() {
+        properties.initialUsers!!.sortBy { it.id }
+
+        mockMvc.get("/curo-api/users/bob_tower") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+        }.andExpect {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.id") { value(properties.initialUsers!![0].id) }
+            jsonPath("$.email") { value(properties.initialUsers!![0].email) }
+            jsonPath("$.firstname") { value(properties.initialUsers!![0].firstname) }
+            jsonPath("$.lastname") { value(properties.initialUsers!![0].lastname) }
+        }
+    }
+
+    @Test
+    fun `getUser() - loading current user should work`() {
+        mockMvc.get("/curo-api/users/me") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+        }.andExpect {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.id") { value("demo") }
+            jsonPath("$.email") { value("demo@demo.com") }
+            jsonPath("$.firstname") { value("demo") }
+            jsonPath("$.lastname") { value("demo") }
+        }
+    }
 }

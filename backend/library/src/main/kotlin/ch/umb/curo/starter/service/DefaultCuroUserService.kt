@@ -48,4 +48,9 @@ class DefaultCuroUserService(private val identityService: IdentityService) : Cur
 
         return result
     }
+
+    override fun getUser(id: String): CuroUser =
+        CuroUser.fromCamundaUser(identityService.createUserQuery().userId(id).singleResult())
+
+    override fun getCurrentUser(): CuroUser = getUser(identityService.currentAuthentication.userId)
 }
