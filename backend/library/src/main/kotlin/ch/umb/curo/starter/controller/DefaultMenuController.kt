@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class DefaultMenuController(private val curoMenuService: CuroMenuService) : MenuController {
 
-    override fun getMenu(): CuroMenu {
-        return curoMenuService.getMenu()
+    override fun getMenu(additionalAttributes: ArrayList<String>): CuroMenu {
+        return curoMenuService.getMenu(additionalAttributes)
     }
 }

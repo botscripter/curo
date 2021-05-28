@@ -57,7 +57,13 @@ class CuroMenu : ArrayList<CuroMenu.MenuElement>() {
          * Sub-Elements of the menu element if the type is FOLDER
          **/
         @Schema(description = "Sub-Elements of the menu element if the type is FOLDER")
-        val subElements: ArrayList<MenuElement>? = null
+        val subElements: ArrayList<MenuElement>? = null,
+
+        /**
+         * Additional attributes of the menu element
+         **/
+        @Schema(description = "Additional attributes of the menu element")
+        val additionalAttributes: Map<String, Any>? = null
     )
 
     enum class MenuElementType {
@@ -65,11 +71,17 @@ class CuroMenu : ArrayList<CuroMenu.MenuElement>() {
     }
 
     companion object {
-        fun fromFilter(filter: Filter): MenuElement {
+        fun fromFilter(filter: Filter, additionalAttributeList: ArrayList<String>): MenuElement {
             val properties = filter.properties
             val color = properties.getOrDefault("color", "#000000") as String
             val order = properties.getOrDefault("priority", 0) as Int
             val icon = properties.getOrDefault("icon", null) as String?
+
+            val additionalAttributes = if(additionalAttributeList.isNotEmpty()) {
+                additionalAttributeList.associateWith { properties.getOrDefault(it, null) }.filterValues { it != null }
+            } else {
+                null
+            }
 
             return MenuElement(
                 name = filter.name,
@@ -77,7 +89,8 @@ class CuroMenu : ArrayList<CuroMenu.MenuElement>() {
                 type = MenuElementType.TASK_FILTER,
                 order = order,
                 color = color,
-                filterId = filter.id
+                filterId = filter.id,
+                additionalAttributes = additionalAttributes
             )
         }
     }
