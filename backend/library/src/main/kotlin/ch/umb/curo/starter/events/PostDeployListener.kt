@@ -4,6 +4,7 @@ import ch.umb.curo.starter.property.CuroProperties
 import org.camunda.bpm.engine.spring.SpringProcessEngineConfiguration
 import org.slf4j.LoggerFactory
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.http.MediaType
 
 class PostDeployListener(
     private val properties: CuroProperties,
@@ -54,15 +55,15 @@ class PostDeployListener(
         val defaultSerializationFormat = context.environment.getProperty("camunda.bpm.default-serialization-format")
             ?: processEngineConfiguration.defaultSerializationFormat
         when {
-            (defaultSerializationFormat == "application/json") -> {
+            (defaultSerializationFormat == MediaType.APPLICATION_JSON_VALUE) -> {
                 logger.debug("CURO: Default serialization format is already set to 'application/json'")
             }
-            (properties.setDefaultSerializationFormat && defaultSerializationFormat != "application/json") -> {
+            (properties.setDefaultSerializationFormat && defaultSerializationFormat != MediaType.APPLICATION_JSON_VALUE) -> {
                 processEngineConfiguration.defaultSerializationFormat =
-                    "application/json"
+                    MediaType.APPLICATION_JSON_VALUE
                 logger.info("CURO: Set default serialization format to 'application/json'")
             }
-            (!properties.setDefaultSerializationFormat && defaultSerializationFormat != "application/json") -> {
+            (!properties.setDefaultSerializationFormat && defaultSerializationFormat != MediaType.APPLICATION_JSON_VALUE) -> {
                 logger.warn("CURO: ⚠️ Default serialization format is set to '$defaultSerializationFormat' which is not supported by Curo ⚠️")
             }
         }

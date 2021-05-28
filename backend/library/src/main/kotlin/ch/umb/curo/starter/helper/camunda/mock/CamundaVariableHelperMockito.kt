@@ -12,6 +12,7 @@ import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.doReturn
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
 
 /**
  * CamundaVariableHelper mock implementation for Mockito
@@ -31,7 +32,7 @@ class CamundaVariableHelperMockito(override val variableScope: VariableScope, ov
 
     override fun mockWithJson(variable: CamundaVariableDefinition<*>, value: String) {
         if (logging) logger.info("add mock for variable '${variable.value}' (as json) -> $value")
-        doReturn(JsonValueImpl(value, "application/json")).`when`(variableScope)
+        doReturn(JsonValueImpl(value, MediaType.APPLICATION_JSON_VALUE)).`when`(variableScope)
             .getVariableTyped<TypedValue>(eq(variable.value), eq(true))
     }
 
@@ -41,7 +42,7 @@ class CamundaVariableHelperMockito(override val variableScope: VariableScope, ov
             ObjectValueImpl(
                 value,
                 ObjectMapper().writeValueAsString(value),
-                "application/json",
+                MediaType.APPLICATION_JSON_VALUE,
                 value?.let { value::class.java.canonicalName } ?: "",
                 true)).`when`(
             variableScope
@@ -50,7 +51,7 @@ class CamundaVariableHelperMockito(override val variableScope: VariableScope, ov
 
     override fun mockWithJson(variable: CamundaVariableListDefinition<*>, value: String) {
         if (logging) logger.info("add mock for list variable '${variable.value}' (as json) -> $value")
-        doReturn(JsonValueImpl(value, "application/json")).`when`(variableScope)
+        doReturn(JsonValueImpl(value, MediaType.APPLICATION_JSON_VALUE)).`when`(variableScope)
             .getVariableTyped<TypedValue>(eq(variable.value), eq(true))
     }
 }

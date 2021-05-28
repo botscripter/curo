@@ -5,6 +5,7 @@ import ch.umb.curo.starter.exception.details.DefaultErrorModel
 import ch.umb.curo.starter.property.CuroProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.joda.time.DateTime
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import java.io.PrintWriter
@@ -31,7 +32,7 @@ class GlobalExceptionHandler(
             request.servletPath)
 
         response.status = apiException.errorCode.httpMapping
-        response.contentType = "application/json"
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
         response.writer.write(mapper.writeValueAsString(errorResponse))
     }
 
@@ -56,7 +57,7 @@ class GlobalExceptionHandler(
             businessLogicException.isRepeatable)
 
         response.status = businessLogicException.statusCode
-        response.contentType = "application/json"
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
         response.writer.write(mapper.writeValueAsString(errorResponse))
     }
 

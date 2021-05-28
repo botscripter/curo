@@ -14,7 +14,9 @@ import org.camunda.bpm.engine.rest.dto.task.TaskQueryDto
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Part
 
 @Tag(name = "task", description = "Curo Task API")
 @RequestMapping("/curo-api/tasks")
@@ -195,7 +197,7 @@ interface TaskController {
         description = "",
         security = [SecurityRequirement(name = "CuroBasic")]
     )
-    @PostMapping("/{id}/status", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/{id}/status", produces = [MediaType.APPLICATION_JSON_VALUE], consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun completeTask(
         @Parameter(description = "ID of task to complete.", required = true)
         @PathVariable("id", required = true)
@@ -220,6 +222,41 @@ interface TaskController {
         @Parameter(description = "Define how long in seconds flowToNext should wait.", required = false)
         @RequestParam("flowToNextTimeOut", required = false)
         flowToNextTimeOut: Int? = null
+    ): CompleteTaskResponse
+
+    @Operation(
+        summary = "Complete the given task.",
+        operationId = "completeTaskMultiPart",
+        description = "",
+        security = [SecurityRequirement(name = "CuroBasic")]
+    )
+    @PostMapping("/{id}/status", produces = [MediaType.APPLICATION_JSON_VALUE], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun completeTaskMultiPart(
+        @Parameter(description = "ID of task to complete.", required = true)
+        @PathVariable("id", required = true)
+        id: String,
+
+        @Parameter(description = "Variables.", required = false)
+        @RequestBody(required = false)
+        body: String?,
+
+        @Parameter(description = "Define if variables should be returned on success.", required = false)
+        @RequestParam("returnVariables", required = false, defaultValue = "false")
+        returnVariables: Boolean = false,
+
+        @Parameter(description = "Define if flowToNext should be returned on success.", required = false)
+        @RequestParam("flowToNext", required = false, defaultValue = "false")
+        flowToNext: Boolean = false,
+
+        @Parameter(description = "Define if flowToNext should ignore task assignee.", required = false)
+        @RequestParam("flowToNextIgnoreAssignee", required = false)
+        flowToNextIgnoreAssignee: Boolean? = null,
+
+        @Parameter(description = "Define how long in seconds flowToNext should wait.", required = false)
+        @RequestParam("flowToNextTimeOut", required = false)
+        flowToNextTimeOut: Int? = null,
+
+        request: HttpServletRequest
     ): CompleteTaskResponse
 
     @Operation(
@@ -258,6 +295,27 @@ interface TaskController {
         @RequestBody
         body: HashMap<String, Any?>,
 
+        response: HttpServletResponse
+    )
+
+    @Operation(
+        summary = "Save variables (from multipart) for the given task",
+        operationId = "saveVariablesMultiPart",
+        description = "",
+        security = [SecurityRequirement(name = "CuroBasic")]
+    )
+    @PatchMapping("/{id}/variables", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun saveVariablesMultiPart(
+
+        @Parameter(description = "ID of task", required = true)
+        @PathVariable("id", required = true)
+        id: String,
+
+        @Parameter(description = "Variables", required = false)
+        @RequestPart("variables")
+        body: String?,
+
+        request: HttpServletRequest,
         response: HttpServletResponse
     )
 

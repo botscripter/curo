@@ -24,6 +24,7 @@ import org.camunda.bpm.engine.rest.dto.task.TaskQueryDto
 import org.camunda.bpm.engine.rest.sub.runtime.impl.FilterResourceImpl
 import org.camunda.bpm.engine.task.Task
 import org.camunda.bpm.engine.variable.VariableMap
+import org.camunda.bpm.engine.variable.Variables
 import org.camunda.bpm.engine.variable.type.ValueType
 import org.camunda.bpm.engine.variable.value.FileValue
 import org.camunda.bpm.engine.variable.value.TypedValue
@@ -34,7 +35,10 @@ import org.camunda.spin.plugin.variable.value.impl.JsonValueImpl
 import org.springframework.beans.BeanUtils
 import org.springframework.http.*
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Part
 
 @Service
 open class DefaultCuroTaskService(
@@ -77,7 +81,7 @@ open class DefaultCuroTaskService(
             isShowUndefinedVariable -> {
                 listOf<String>()
             }
-            areVariablesNeeded  -> {
+            areVariablesNeeded -> {
                 @Suppress("UNCHECKED_CAST")
                 val filterVariables = filter.properties["variables"] as List<HashMap<String, String>?>?
                 variablesToInclude = filterVariables?.mapNotNull { it?.getOrDefault("name", null) } ?: variables
@@ -248,6 +252,7 @@ open class DefaultCuroTaskService(
     override fun completeTask(
         id: String,
         body: HashMap<String, Any?>?,
+        files: Map<String, MultipartFile>?,
         returnVariables: Boolean,
         flowToNext: Boolean,
         flowToNextIgnoreAssignee: Boolean?,
@@ -270,6 +275,11 @@ open class DefaultCuroTaskService(
                 saveSingleVariable(entry.key, entry.value, objectVariablesNames, taskVariables, task)
             }
         }
+
+        files?.filter { it.key != "variables" }?.forEach { entry ->
+            saveMultiPart(entry, task)
+        }
+
         //Complete Task
         taskService.complete(task.id)
 
@@ -314,7 +324,7 @@ open class DefaultCuroTaskService(
                     taskService.setVariable(
                         task.id,
                         name,
-                        JsonValueImpl(ObjectMapper().writeValueAsString(value), "application/json")
+                        JsonValueImpl(ObjectMapper().writeValueAsString(value), MediaType.APPLICATION_JSON_VALUE)
                     )
                 } else {
                     val obj = ObjectMapper().convertValue(value, taskVariables[name]!!::class.java)
@@ -338,7 +348,7 @@ open class DefaultCuroTaskService(
                     taskService.setVariable(
                         task.id,
                         name,
-                        JsonValueImpl(ObjectMapper().writeValueAsString(value), "application/json")
+                        JsonValueImpl(ObjectMapper().writeValueAsString(value), MediaType.APPLICATION_JSON_VALUE)
                     )
                 } catch (e: UnrecognizedPropertyException) {
                     saveIfIgnoreObjectType(task, name, value, e)
@@ -356,13 +366,13 @@ open class DefaultCuroTaskService(
         task: Task,
         name: String,
         value: Any?,
-        e: java.lang.Exception
+        e: Exception
     ) {
         if (properties.ignoreObjectType) {
             taskService.setVariable(
                 task.id,
                 name,
-                JsonValueImpl(ObjectMapper().writeValueAsString(value), "application/json")
+                JsonValueImpl(ObjectMapper().writeValueAsString(value), MediaType.APPLICATION_JSON_VALUE)
             )
         } else {
             throw ApiException.curoErrorCode(ApiException.CuroErrorCode.CANT_SAVE_IN_EXISTING_OBJECT)
@@ -403,14 +413,14 @@ open class DefaultCuroTaskService(
                 }
             }
         } catch (e: AuthorizationException) {
-            ApiException.unauthorized403("User is not allowed to set assignee")
+            throw ApiException.unauthorized403("User is not allowed to set assignee")
                 .printException(properties.printStacktrace, e)
         }
 
         response.status = HttpStatus.OK.value()
     }
 
-    override fun saveVariables(id: String, body: HashMap<String, Any?>, response: HttpServletResponse) {
+    override fun saveVariables(id: String, body: HashMap<String, Any?>?, files: Map<String, MultipartFile>?, response: HttpServletResponse) {
         val task = getTask(id)
         //Check if user is assignee
         val currentUser = identityService.currentAuthentication
@@ -422,11 +432,30 @@ open class DefaultCuroTaskService(
             taskVariables.filter { it.value != null && !BeanUtils.isSimpleValueType(it.value::class.java) }
         val objectVariablesNames = objectVariables.map { it.key }
 
-        body.entries.forEach { entry ->
+        body?.entries?.forEach { entry ->
             saveSingleVariable(entry.key, entry.value, objectVariablesNames, taskVariables, task)
         }
 
+        files?.filter { it.key != "variables" }?.forEach { entry ->
+            saveMultiPart(entry, task)
+        }
+
         response.status = HttpStatus.OK.value()
+    }
+
+    private fun saveMultiPart(entry: Map.Entry<String, MultipartFile>, task: Task) {
+        val file = entry.value
+        val typedValue = if (file.originalFilename?.isNotEmpty() == true) {
+            Variables.fileValue(file.originalFilename)
+                .file(file.inputStream)
+                .mimeType(file.contentType)
+                .encoding("UTF-8")
+                .create()
+        } else {
+            Variables.byteArrayValue(file.bytes)
+        }
+
+        taskService.setVariable(task.id, entry.key, typedValue)
     }
 
     private fun checkForSameAssignee(

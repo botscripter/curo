@@ -113,6 +113,7 @@ class ApiException private constructor(
      */
     enum class CuroErrorCode constructor(val errorCode: ErrorCode, val defaultMessage: String = "") {
         TASK_NOT_FOUND(ErrorCode.NOT_FOUND, "Task not found"),
+        PROCESS_INSTANCE_NOT_FOUND(ErrorCode.NOT_FOUND, "Process instance not found"),
         PROCESS_DEFINITION_NOT_FOUND(ErrorCode.NOT_FOUND, "Process definition not found"),
         VARIABLE_NOT_FOUND(ErrorCode.NOT_FOUND, "Variable not found"),
         VARIABLE_IS_NO_FILE(ErrorCode.NOT_FOUND, "Variable is not a file"),

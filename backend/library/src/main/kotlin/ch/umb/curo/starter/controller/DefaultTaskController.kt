@@ -6,8 +6,12 @@ import ch.umb.curo.starter.models.response.CompleteTaskResponse
 import ch.umb.curo.starter.models.response.CuroFilterResponse
 import ch.umb.curo.starter.models.response.CuroTask
 import ch.umb.curo.starter.service.CuroTaskService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.multipart.MultipartHttpServletRequest
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 
@@ -71,6 +75,41 @@ class DefaultTaskController(private val curoTaskService: CuroTaskService) : Task
         return curoTaskService.completeTask(
             id,
             body,
+            null,
+            returnVariables,
+            flowToNext,
+            flowToNextIgnoreAssignee,
+            flowToNextTimeOut
+        )
+    }
+
+    override fun completeTaskMultiPart(
+        id: String,
+        body: String?,
+        returnVariables: Boolean,
+        flowToNext: Boolean,
+        flowToNextIgnoreAssignee: Boolean?,
+        flowToNextTimeOut: Int?,
+        request: HttpServletRequest
+    ): CompleteTaskResponse {
+
+        val parsedObject = body?.let {
+            ObjectMapper().readValue(
+                body,
+                ObjectMapper().typeFactory.constructMapLikeType(
+                    HashMap::class.java,
+                    String::class.java,
+                    Any::class.java
+                )
+            ) as HashMap<String, Any?>
+        }
+
+        val multipartFiles: Map<String, MultipartFile> = (request as MultipartHttpServletRequest).fileMap
+
+        return curoTaskService.completeTask(
+            id,
+            parsedObject,
+            multipartFiles,
             returnVariables,
             flowToNext,
             flowToNextIgnoreAssignee,
@@ -83,7 +122,28 @@ class DefaultTaskController(private val curoTaskService: CuroTaskService) : Task
     }
 
     override fun saveVariables(id: String, body: HashMap<String, Any?>, response: HttpServletResponse) {
-        curoTaskService.saveVariables(id, body, response)
+        curoTaskService.saveVariables(id, body, null, response)
+    }
+
+    override fun saveVariablesMultiPart(
+        id: String,
+        body: String?,
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ) {
+        val parsedObject = body?.let {
+            ObjectMapper().readValue(
+                body,
+                ObjectMapper().typeFactory.constructMapLikeType(
+                    HashMap::class.java,
+                    String::class.java,
+                    Any::class.java
+                )
+            ) as HashMap<String, Any?>
+        }
+
+        val multipartFiles: Map<String, MultipartFile> = (request as MultipartHttpServletRequest).fileMap
+        curoTaskService.saveVariables(id, parsedObject, multipartFiles, response)
     }
 
     override fun nextTask(id: String, flowToNextIgnoreAssignee: Boolean?): FlowToNextResult {

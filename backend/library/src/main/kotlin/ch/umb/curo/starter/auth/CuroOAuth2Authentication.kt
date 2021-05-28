@@ -17,6 +17,7 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.rest.security.auth.AuthenticationProvider
 import org.camunda.bpm.engine.rest.security.auth.AuthenticationResult
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
 import java.net.URI
 import java.net.URL
 import java.net.http.HttpClient
@@ -157,7 +158,7 @@ open class CuroOAuth2Authentication : AuthenticationProvider, CuroLoginMethod {
             val request = HttpRequest.newBuilder(
                 URI.create("$iss/.well-known/openid-configuration")
             )
-                .header("accept", "application/json")
+                .header("accept", MediaType.APPLICATION_JSON_VALUE)
                 .build()
             val httpResponse = client.send(request, JsonBodyHandler(OpenidConfiguration::class.java))
             if (httpResponse.statusCode() == 200) {

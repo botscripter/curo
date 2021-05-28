@@ -15,6 +15,7 @@ import org.camunda.spin.plugin.variable.value.JsonValue
 import org.camunda.spin.plugin.variable.value.impl.JsonValueImpl
 import org.jboss.logging.Logger
 import org.springframework.beans.BeanUtils
+import org.springframework.http.MediaType
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.util.*
@@ -246,8 +247,6 @@ open class CamundaVariableHelper(private val variableScope: VariableScope) {
                             logger.debug("CURO: \t-> Changed variable '${definition.value}' to defined type '${definition.type}'")
                         } catch (e: Exception) {
                             logger.debug("CURO: \t-> Changed variable '${definition.value}' to defined type '${definition.type}' failed!! -> Variable got skipped")
-                        } finally {
-                            return@forEach
                         }
                     }
                 }
@@ -285,7 +284,7 @@ open class CamundaVariableHelper(private val variableScope: VariableScope) {
                                         definition.type.getConstructor()
                                             .newInstance()
                                     ),
-                                    "application/json"
+                                    MediaType.APPLICATION_JSON_VALUE
                                 )
                             )
                             logger.debug("CURO: \t-> Initiate variable '${definition.value}' with empty value")
@@ -293,7 +292,7 @@ open class CamundaVariableHelper(private val variableScope: VariableScope) {
                         (it.type == JacksonJsonNode::class.java) && !emptyInit -> {
                             variableScope.setVariable(
                                 definition.value,
-                                JsonValueImpl("", "application/json")
+                                JsonValueImpl("", MediaType.APPLICATION_JSON_VALUE)
                             )
                             logger.debug("CURO: \t-> Initiate variable '${definition.value}' with null value")
                         }
@@ -306,7 +305,7 @@ open class CamundaVariableHelper(private val variableScope: VariableScope) {
                                         ObjectMapper().writeValueAsString(
                                             definition.type.getConstructor().newInstance()
                                         ),
-                                        "application/json",
+                                        MediaType.APPLICATION_JSON_VALUE,
                                         definition.type.canonicalName,
                                         true
                                     )
@@ -315,7 +314,7 @@ open class CamundaVariableHelper(private val variableScope: VariableScope) {
                             } else {
                                 variableScope.setVariable(
                                     definition.value,
-                                    ObjectValueImpl(null, "", "application/json", definition.type.canonicalName, true)
+                                    ObjectValueImpl(null, "", MediaType.APPLICATION_JSON_VALUE, definition.type.canonicalName, true)
                                 )
                                 logger.debug("CURO: \t-> Initiate variable '${definition.value}' with null value")
                             }

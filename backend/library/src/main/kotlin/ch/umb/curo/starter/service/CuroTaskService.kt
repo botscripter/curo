@@ -6,6 +6,7 @@ import ch.umb.curo.starter.models.response.CompleteTaskResponse
 import ch.umb.curo.starter.models.response.CuroFilterResponse
 import ch.umb.curo.starter.models.response.CuroTask
 import org.springframework.http.ResponseEntity
+import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletResponse
 
 interface CuroTaskService {
@@ -34,6 +35,7 @@ interface CuroTaskService {
     fun completeTask(
         id: String,
         body: HashMap<String, Any?>?,
+        files: Map<String, MultipartFile>?,
         returnVariables: Boolean,
         flowToNext: Boolean,
         flowToNextIgnoreAssignee: Boolean?,
@@ -42,7 +44,12 @@ interface CuroTaskService {
 
     fun assignTask(id: String, assigneeRequest: AssigneeRequest, response: HttpServletResponse)
 
-    fun saveVariables(id: String, body: HashMap<String, Any?>, response: HttpServletResponse)
+    fun saveVariables(
+        id: String,
+        body: HashMap<String, Any?>?,
+        files: Map<String, MultipartFile>?,
+        response: HttpServletResponse
+    )
 
     fun nextTask(id: String, flowToNextIgnoreAssignee: Boolean?): FlowToNextResult
 }

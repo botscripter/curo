@@ -15,6 +15,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
 import java.util.*
 import kotlin.collections.LinkedHashMap
@@ -124,6 +125,53 @@ class ProcessInstanceControllerTest {
             jsonPath("$.variables.obj.usable") { isBoolean() }
             jsonPath("$.variables.obj.usable") { value(obj.usable.toString()) }
         }
+    }
+
+    @Test
+    fun `saveVariables() - save variables without authorization should not work`() {
+        mockMvc.patch("/curo-api/process-instances/12345/variables") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `saveVariables() - save variables for not existing task should result in 404`() {
+        val (variables) = getVariables()
+
+        mockMvc.patch("/curo-api/process-instances/12345/variables") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+            contentType = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(variables)
+        }.andExpect {
+            status { isNotFound() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+        }
+    }
+
+    @Test
+    fun `saveVariables() - save variables should work`() {
+        val (variables, data) = getVariables()
+        val newInstance = runtimeService.startProcessInstanceByKey("Process_1", variables)
+
+        variables["name"] = "UMB AG"
+        data["name"] = "NEW NAME"
+        variables["data"] = data
+
+        mockMvc.patch("/curo-api/process-instances/${newInstance.processInstanceId}/variables") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+            contentType = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(variables)
+        }.andExpect {
+            status { isOk() }
+        }
+
+        val taskVariables = runtimeService.getVariablesTyped(newInstance.processInstanceId)
+        assert((taskVariables["name"] ?: "") == "UMB AG")
+        assert((taskVariables["data"] as LinkedHashMap<*, *>)["name"] == "NEW NAME")
     }
 
     private fun getVariables(): Triple<HashMap<String, Any?>, LinkedHashMap<String, Any>, DataModel> {
