@@ -1,7 +1,5 @@
-
 version: 2
 updates:
-
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -12,18 +10,6 @@ updates:
     target-branch: "main"
     labels:
       - "github-actions"
-      - "dependencies"
-
-  # Enable version updates for npm
-  - package-ecosystem: "npm"
-    directory: "/frontend"
-    schedule:
-      interval: "weekly"
-      time: "06:00"
-      timezone: "Europe/Zurich"
-    target-branch: "main"
-    labels:
-      - "npm"
       - "dependencies"
 
   # Enable version updates for Gradle
