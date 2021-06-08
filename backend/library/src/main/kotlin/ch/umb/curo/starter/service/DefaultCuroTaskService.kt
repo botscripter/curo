@@ -18,10 +18,12 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import org.apache.commons.io.IOUtils
 import org.camunda.bpm.engine.*
 import org.camunda.bpm.engine.filter.Filter
+import org.camunda.bpm.engine.history.HistoricIdentityLinkLog
 import org.camunda.bpm.engine.impl.identity.Authentication
 import org.camunda.bpm.engine.rest.dto.task.TaskDto
 import org.camunda.bpm.engine.rest.dto.task.TaskQueryDto
 import org.camunda.bpm.engine.rest.sub.runtime.impl.FilterResourceImpl
+import org.camunda.bpm.engine.task.IdentityLink
 import org.camunda.bpm.engine.task.Task
 import org.camunda.bpm.engine.variable.VariableMap
 import org.camunda.bpm.engine.variable.Variables
@@ -36,9 +38,9 @@ import org.springframework.beans.BeanUtils
 import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.Part
+import javax.ws.rs.NotSupportedException
+
 
 @Service
 open class DefaultCuroTaskService(
@@ -66,7 +68,7 @@ open class DefaultCuroTaskService(
         checkFilterType(filter)
         checkQuery(query)
 
-        var areVariablesNeeded = attributes.contains("variables") || attributes.isEmpty()
+        val areVariablesNeeded = attributes.contains("variables") || attributes.isEmpty()
         val isShowUndefinedVariable = (filter.properties.getOrDefault(
             "showUndefinedVariable",
             false
@@ -160,11 +162,13 @@ open class DefaultCuroTaskService(
     ): CuroTask {
         val curoTask = if (loadFromHistoric) {
             val task = getHistoricTask(id)
+            val candidates = getHistoricIdentityLinkLogs(id).mapCandidates()
             val formKey = formService.getTaskFormKey(task.processDefinitionId, task.taskDefinitionKey)
-            CuroTask.fromCamundaHistoricTask(task, formKey)
+            CuroTask.fromCamundaHistoricTask(task, formKey, candidates)
         } else {
             val task = getTask(id)
-            CuroTask.fromCamundaTask(task)
+            val candidates = getIdentityLinks(id).mapCandidates()
+            CuroTask.fromCamundaTask(task, candidates)
         }
 
         if (attributes.contains("variables") || attributes.isEmpty()) {
@@ -186,6 +190,51 @@ open class DefaultCuroTaskService(
 
         return curoTask
     }
+
+    private fun getIdentityLinks(taskId: String) : List<IdentityLink> {
+        return CamundaAuthUtil.runWithoutAuthentication({
+            taskService.getIdentityLinksForTask(taskId)
+        }, identityService) ?: listOf()
+
+    }
+
+
+    private fun getHistoricIdentityLinkLogs(taskId: String): MutableList<HistoricIdentityLinkLog> {
+        return CamundaAuthUtil.runWithoutAuthentication({
+            historyService.createHistoricIdentityLinkLogQuery().taskId(taskId).list()
+        }, identityService) ?: mutableListOf()
+    }
+
+    @JvmName("mapCandidatesIdentityLink")
+    fun List<IdentityLink>.mapCandidates() : List<CuroTask.Candidate> {
+        return this.map { identityLink ->
+
+            if (!identityLink.groupId.isNullOrEmpty()) {
+                CuroTask.Candidate(identityLink.groupId, identityLink.type, identityService.createGroupQuery().groupId(identityLink.groupId).singleResult()?.name)
+
+            } else if (!identityLink.userId.isNullOrEmpty()) {
+                CuroTask.Candidate(identityLink.userId, identityLink.type)
+            } else {
+                throw NotSupportedException("An identity link must have a user or a group id. This identity link does not: $identityLink")
+            }
+        }
+    }
+
+    @JvmName("mapCandidatesHistoricIdentityLink")
+    fun MutableList<HistoricIdentityLinkLog>.mapCandidates() : List<CuroTask.Candidate> {
+        return this.map { identityLink ->
+
+            if (!identityLink.groupId.isNullOrEmpty()) {
+                CuroTask.Candidate(identityLink.groupId, identityLink.type, identityService.createGroupQuery().groupId(identityLink.groupId).singleResult()?.name)
+
+            } else if (!identityLink.userId.isNullOrEmpty()) {
+                CuroTask.Candidate(identityLink.userId, identityLink.type)
+            } else {
+                throw NotSupportedException("An historic identity link must have a user or a group id. This historic identity link does not: $identityLink")
+            }
+        }
+    }
+
 
     override fun getTaskFile(id: String, file: String): ResponseEntity<ByteArray> {
         val task = getTask(id)

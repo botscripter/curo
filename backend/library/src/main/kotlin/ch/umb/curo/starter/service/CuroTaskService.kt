@@ -5,6 +5,8 @@ import ch.umb.curo.starter.models.request.AssigneeRequest
 import ch.umb.curo.starter.models.response.CompleteTaskResponse
 import ch.umb.curo.starter.models.response.CuroFilterResponse
 import ch.umb.curo.starter.models.response.CuroTask
+import org.camunda.bpm.engine.history.HistoricIdentityLinkLog
+import org.camunda.bpm.engine.task.IdentityLink
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletResponse
@@ -52,4 +54,5 @@ interface CuroTaskService {
     )
 
     fun nextTask(id: String, flowToNextIgnoreAssignee: Boolean?): FlowToNextResult
+
 }

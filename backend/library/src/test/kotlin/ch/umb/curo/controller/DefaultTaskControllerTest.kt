@@ -12,6 +12,7 @@ import org.camunda.bpm.engine.rest.dto.runtime.FilterDto
 import org.camunda.bpm.engine.variable.impl.value.FileValueImpl
 import org.camunda.bpm.engine.variable.type.ValueType
 import org.camunda.spin.impl.json.jackson.JacksonJsonNode
+import org.hamcrest.Matchers.containsInAnyOrder
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -70,6 +71,80 @@ class DefaultTaskControllerTest {
         }
     }
 
+
+    @Test
+    fun `getTask() - loading task with active id should return candidate groups, canidate users and assingee`() {
+        `getTask() - loading task with id should return candidate groups, canidate users and assingee`(false, false)
+    }
+
+    @Test
+    fun `getTask() - loading historic task with active id should return candidate groups, canidate users and assingee`() {
+        `getTask() - loading task with id should return candidate groups, canidate users and assingee`(false, true)
+    }
+
+    @Test
+    fun `getTask() - loading historic task with completed task id should return candidate groups, canidate users and assingee`() {
+        `getTask() - loading task with id should return candidate groups, canidate users and assingee`(true, true)
+    }
+
+    fun `getTask() - loading task with id should return candidate groups, canidate users and assingee`(completeTask: Boolean, requestHistoricTask: Boolean) {
+        val newInstance = runtimeService.startProcessInstanceByKey("Process_assignedCandidateGroupAndUsers")
+        val task = taskService.createTaskQuery().processInstanceId(newInstance.rootProcessInstanceId).singleResult()
+
+        if (completeTask)   taskService.complete(task.id)
+
+        mockMvc.get("/curo-api/tasks/${task.id}") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+            if (requestHistoricTask) param("historic", "true")
+        }.andExpect {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.id") { value(task.id) }
+            jsonPath("$.assignee") { value("sampleAssignee") }
+            jsonPath("$.candidates") { isArray() }
+            //jsonPath("$.candidates[*].name") { value(containsInAnyOrder("Sample Group Name", null)) }
+            jsonPath("$.candidates.length()") {value(5) }
+            jsonPath("$.candidates[*].id") { value(containsInAnyOrder("nonExistingSampleGroup", "sampleGroup", "sampleAssignee", "sampleAssignee2", "sampleAssignee")) }
+        }.andDo { print() }
+    }
+
+
+    @Test
+    fun `getTask() - loading task (Task 2) with active id should return one candidate group with name`() {
+        `getTask() - loading task (Task 2) with active id should return one candidate group with name`(false)
+    }
+
+    @Test
+    fun `getTask() - loading historic task (Task 2) with active id should return one candidate group with name`() {
+        `getTask() - loading task (Task 2) with active id should return one candidate group with name`(true)
+    }
+
+    fun `getTask() - loading task (Task 2) with active id should return one candidate group with name`(isHistoricTask: Boolean) {
+        val newInstance = runtimeService.startProcessInstanceByKey("Process_assignedCandidateGroupAndUsers")
+        var task = taskService.createTaskQuery().processInstanceId(newInstance.rootProcessInstanceId).singleResult()
+        taskService.complete(task.id)
+        // second task
+        task = taskService.createTaskQuery().processInstanceId(newInstance.rootProcessInstanceId).singleResult()
+
+        mockMvc.get("/curo-api/tasks/${task.id}") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+            if (isHistoricTask) param("historic", "true")
+        }.andExpect {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.id") { value(task.id) }
+            jsonPath("$.assignee") { doesNotExist() }
+            jsonPath("$.candidates") { isArray() }
+            //jsonPath("$.candidates[*].name") { value(containsInAnyOrder("Sample Group Name", null)) }
+            jsonPath("$.candidates.length()") {value(1) }
+            jsonPath("$.candidates[*].id") { value("sampleGroup") }
+            jsonPath("$.candidates[*].name") { value("Sample Group Name") }
+        }.andDo { print() }
+    }
+
+
     @Test
     fun `getTask() - loading task without authorization should not work`() {
         mockMvc.get("/curo-api/tasks/12345") {
@@ -124,6 +199,8 @@ class DefaultTaskControllerTest {
             jsonPath("$.name") { value(task.name) }
             jsonPath("$.due") { isNotEmpty() }
             jsonPath("$.variables") { doesNotExist() }
+            jsonPath("$.candidates") { doesNotExist() }
+
         }
     }
 
@@ -168,6 +245,24 @@ class DefaultTaskControllerTest {
             jsonPath("$.variables.image.encoding") { value(imageFile.encoding.toString()) }
         }.andDo { print() }
     }
+
+    @Test
+    fun `getTask() - loading task with id should return assignee`() {
+        val newInstance = runtimeService.startProcessInstanceByKey("Process_assignedUser")
+        val task = taskService.createTaskQuery().processInstanceId(newInstance.rootProcessInstanceId).singleResult()
+
+        mockMvc.get("/curo-api/tasks/${task.id}") {
+            accept = MediaType.APPLICATION_JSON
+            header("Authorization", "CuroBasic $basicLogin")
+        }.andExpect {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.id") { value(task.id) }
+            jsonPath("$.assignee") { value("sampleAssignee") }
+
+        }.andDo { print() }
+    }
+
 
     @Test
     fun `getTask() - loading task with id and selected variables should return only selected variables`() {
@@ -226,6 +321,8 @@ class DefaultTaskControllerTest {
         }
     }
 
+
+
     @Test
     fun `getTask() - loading historic task with active id should work`() {
         val newInstance = runtimeService.startProcessInstanceByKey("Process_1")
@@ -242,6 +339,7 @@ class DefaultTaskControllerTest {
             jsonPath("$.processInstanceId") { value(newInstance.rootProcessInstanceId) }
             jsonPath("$.status") { value("open") }
             jsonPath("$.formKey") { value("form/test") }
+            jsonPath("$.candidates") { isEmpty() }
         }
     }
 
@@ -449,7 +547,7 @@ class DefaultTaskControllerTest {
 
         variables["name"] = "CHANGED"
 
-        val result = mockMvc.post("/curo-api/tasks/${task.id}/status") {
+       mockMvc.post("/curo-api/tasks/${task.id}/status") {
             accept = MediaType.APPLICATION_JSON
             header("Authorization", "CuroBasic $basicLogin")
             contentType = MediaType.APPLICATION_JSON
@@ -761,12 +859,11 @@ class DefaultTaskControllerTest {
 
         val filter = createFilter()
 
-        val newInstance1 = runtimeService.startProcessInstanceByKey("Process_1", variables)
-        val newInstance2 = runtimeService.startProcessInstanceByKey("Process_1", variables)
+        runtimeService.startProcessInstanceByKey("Process_1", variables)
+        runtimeService.startProcessInstanceByKey("Process_1", variables)
 
         variables["name"] = "UMB"
-        val newInstance3 =
-            runtimeService.startProcessInstanceByKey("Process_1", variables) // Will no be found by the filter
+        runtimeService.startProcessInstanceByKey("Process_1", variables) // Will no be found by the filter
 
         mockMvc.get("/curo-api/tasks") {
             accept = MediaType.APPLICATION_JSON

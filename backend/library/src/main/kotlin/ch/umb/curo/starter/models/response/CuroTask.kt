@@ -76,6 +76,12 @@ class CuroTask {
     var assignee: String? = null
 
     /**
+     * The candidates to which this task is assigned
+     **/
+    @Schema(description = "The candidates to which this task is assigned")
+    var candidates: List<Candidate>? = null
+
+    /**
      * The userId of the person that is responsible for this task. This is used when a task is delegated
      **/
     @Schema(description = "The userId of the person that is responsible for this task. This is used when a task is delegated")
@@ -143,7 +149,7 @@ class CuroTask {
 
 
     companion object {
-        fun fromCamundaTask(task: Task): CuroTask {
+        fun fromCamundaTask(task: Task, candidates: List<Candidate>? = null): CuroTask {
             val curoTask = CuroTask()
             curoTask.id = task.id
             curoTask.executionId = task.executionId
@@ -163,6 +169,7 @@ class CuroTask {
             curoTask.suspended = task.isSuspended
             curoTask.formKey = task.formKey
 
+            curoTask.candidates = candidates
             return curoTask
         }
 
@@ -190,7 +197,7 @@ class CuroTask {
             return curoTask
         }
 
-        fun fromCamundaHistoricTask(task: HistoricTaskInstance, formKey: String?): CuroTask {
+        fun fromCamundaHistoricTask(task: HistoricTaskInstance, formKey: String?, candidates: List<Candidate>? = null): CuroTask {
             val curoTask = CuroTask()
             curoTask.id = task.id
             curoTask.executionId = task.executionId
@@ -212,6 +219,8 @@ class CuroTask {
             curoTask.suspended = null
             curoTask.formKey = formKey ?: ""
 
+            curoTask.candidates = candidates
+
             if (curoTask.status == null || curoTask.status!!.isEmpty()) {
                 curoTask.status = "open"
             }
@@ -219,6 +228,8 @@ class CuroTask {
             return curoTask
         }
     }
+
+    class Candidate(val id: String, val type: String, val name: String? = null)
 
 
 }
