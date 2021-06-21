@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: Curo
+    description: ""
+    version: 0.0.1
+
+curo:
+  auth:
+    custom-routes:
+      - /custom/api/*
+
+  print-stacktrace: false
+  camunda-telemetry: false
+  enable-historic-instance-permissions: true
+  initial-users:
+    - id: bobtower
+      email: bog@tower.com
+      groups: worker
+      password: test
+    - id: fox
+      email: fox@fox.com
+      groups: worker
+  initial-groups:
+    - id: worker
+      permissions:
+        PROCESS_INSTANCE:
+          - READ
+
+camunda:
+  bpm:
+    admin-user:
+      email: demo@demo.com
+      first-name: demo
+      last-name: demo
+      password: demo
+      id: demo
+    default-serialization-format: application/json
+    filter:
+      create: 🌍 All tasks
+    authorization:
+      enabled: true
+
+logging:
+  level:
+    ch.umb.curo.starter: DEBUG
+    #ROOT: DEBUG
