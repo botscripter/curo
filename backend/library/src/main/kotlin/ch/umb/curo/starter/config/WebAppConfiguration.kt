@@ -49,14 +49,15 @@ open class WebAppConfiguration(
             EnumSet.of(DispatcherType.REQUEST),
             true,
             CamundaSecurityFilter.ENGINE_REST_URL,
-            *CamundaSecurityFilter.CURO_API_URLS.toTypedArray()
+            *CamundaSecurityFilter.CURO_API_URLS.toTypedArray(),
+            *properties.auth.customRoutes.toTypedArray()
         )
         filterRegistration.initParameters =
             hashMapOf(Pair("authentication-provider", CuroBasicAuthAuthentication::class.java.canonicalName))
         logger.debug(
             "CURO: Filter {} for URL {} registered.",
             "Authentication Filter",
-            "${CamundaSecurityFilter.ENGINE_REST_URL}, ${CamundaSecurityFilter.CURO_API_URLS.joinToString(",") { it }}"
+            "${CamundaSecurityFilter.ENGINE_REST_URL}, ${CamundaSecurityFilter.CURO_API_URLS.joinToString(",")}, ${properties.auth.customRoutes.joinToString(",")}"
         )
     }
 }

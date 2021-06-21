@@ -46,8 +46,20 @@ class PostDeployListener(
             logger.warn("CURO: ⚠️ Authorization is not enabled! ⚠️")
         }
 
-        if (!processEngineConfiguration.isAuthorizationEnabled) {
-            logger.info("CURO: Authorization for custom code is not enabled!")
+        if (!processEngineConfiguration.isAuthorizationEnabledForCustomCode) {
+            /*
+             * <p>The following flag <code>authorizationEnabledForCustomCode</code> will
+             * only be taken into account if <code>authorizationEnabled</code> is set
+             * <code>true</code>.</p>
+             *
+             * <p>If the value of the flag <code>authorizationEnabledForCustomCode</code>
+             * is set <code>true</code> then an authorization check will be performed by
+             * executing commands inside custom code (e.g. inside {@link JavaDelegate}).</p>
+             *
+             * <p>The default value is <code>false</code>.</p>
+             *
+             */
+            logger.debug("CURO: Authorization for custom code is not enabled!")
         }
     }
 

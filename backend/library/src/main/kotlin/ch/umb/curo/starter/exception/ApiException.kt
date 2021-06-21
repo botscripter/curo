@@ -80,7 +80,7 @@ class ApiException private constructor(
         INVALID_ARGUMENT(400, "Client specified an invalid argument"),
         FAILED_PRECONDITION(400, "Request can not be executed in the current system state"),
         OUT_OF_RANGE(400, "Client specified an invalid range"),
-        UNAUTHENTICATED(401, "Request not authenticated due to missing, invalid, or expired OAuth token"),
+        UNAUTHENTICATED(401, "Request not authenticated due to missing, invalid, or expired OAuth token / login credentials"),
         PERMISSION_DENIED(
             403,
             "Client does not have sufficient permission. This can happen because the OAuth token does not have the right scopes, the client doesn't have permission, or the API has not been enabled for the client project."

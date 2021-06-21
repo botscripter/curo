@@ -22,4 +22,10 @@ class CuroAuthProperties {
      */
     @NestedConfigurationProperty
     var basic: CuroBasicAuthProperties = CuroBasicAuthProperties()
+
+    /**
+     * Custom routes which should be filtered by Curo.
+     * Curo will inject the default engine for these endpoints.
+     */
+    var customRoutes: List<String> = arrayListOf()
 }

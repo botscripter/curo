@@ -39,11 +39,15 @@ open class CamundaSecurityFilter(
 
         logger.info("CURO: active CuroAuthenticationProvider: ${authenticationProvider::class.java.canonicalName}")
 
+        if(properties.auth.customRoutes.isNotEmpty()){
+            logger.debug("CURO: add custom routes to AuthenticationFilter: ${properties.auth.customRoutes.joinToString(", ")}")
+        }
+
         val registration = FilterRegistrationBean<T>()
         registration.setName("camunda-auth")
         registration.filter = getProcessEngineAuthenticationFilter() as T
         registration.addInitParameter("authentication-provider", authenticationProvider::class.java.canonicalName)
-        registration.addUrlPatterns(ENGINE_REST_URL, *CURO_API_URLS.toTypedArray())
+        registration.addUrlPatterns(ENGINE_REST_URL, *CURO_API_URLS.toTypedArray(), *properties.auth.customRoutes.toTypedArray())
         return registration
     }
 
