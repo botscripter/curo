@@ -95,19 +95,20 @@ class CuroProcessEngineAuthenticationFilter(private val properties: CuroProperti
                 clearAuthentication(engine)
             }
         } else {
-            resp.status = Response.Status.UNAUTHORIZED.statusCode
+            clearAuthentication(engine)
+            throw401(null, request, response)
             authenticationProvider.augmentResponseByAuthenticationChallenge(resp, engine)
         }
     }
 
     private fun throw401(
-        e: Exception,
+        e: Exception?,
         request: HttpServletRequest,
         response: HttpServletResponse
     ) = GlobalExceptionHandler(
         properties,
         mapper
-    ).handleApiException(ApiException.unauthorized401(e.message ?: "", e), request, response)
+    ).handleApiException(ApiException.unauthorized401(e?.message ?: "", e), request, response)
 
     private fun throw403(
         e: Exception,
