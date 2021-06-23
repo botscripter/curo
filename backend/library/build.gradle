@@ -34,7 +34,7 @@ java {
 }
 
 ext {
-    camunda_version = "7.14.0"
+    camunda_version = "7.15.0"
 }
 
 repositories {
