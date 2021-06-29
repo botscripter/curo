@@ -3,13 +3,6 @@
   "name": "Best Filter",
   "owner": "demo",
   "query": {
-    "processVariables": [
-      {
-        "name": "title",
-        "value": "Test",
-        "operator": "eq"
-      }
-    ],
     "sorting": [
       {
         "sortBy": "processVariable",
@@ -48,6 +41,42 @@
         "name": "assignee",
         "type": "text",
         "isAttribute": "true"
+      }
+    ],
+    "filterProperties": [
+      {
+        "label": "Assignee",
+        "variable": "assignee",
+        "isAttribute": true,
+        "type": "select",
+        "valuesGenerator": "assignableUsersGenerator"
+      },
+      {
+        "label": "Priority",
+        "variable": "priority",
+        "isAttribute": true,
+        "type": "select",
+        "values": [
+          {
+            "id": "0",
+            "value": "Low"
+          },
+          {
+            "id": "5",
+            "value": "Normal"
+          },
+          {
+            "id": "10",
+            "value": "High"
+          }
+        ]
+      },
+      {
+        "label": "Title",
+        "variable": "title",
+        "isAttribute": false,
+        "type": "input",
+        "operator": "like"
       }
     ]
   }

@@ -1,7 +1,9 @@
 package ch.umb.curo.starter.service
 
+import ch.umb.curo.starter.SpringContext
 import ch.umb.curo.starter.auth.CamundaAuthUtil
 import ch.umb.curo.starter.exception.ApiException
+import ch.umb.curo.starter.helper.camunda.FilterValueGenerator
 import ch.umb.curo.starter.models.FlowToNextResult
 import ch.umb.curo.starter.models.request.AssigneeRequest
 import ch.umb.curo.starter.models.response.CompleteTaskResponse
@@ -35,12 +37,12 @@ import org.camunda.spin.json.SpinJsonException
 import org.camunda.spin.plugin.variable.type.JsonValueType
 import org.camunda.spin.plugin.variable.value.impl.JsonValueImpl
 import org.springframework.beans.BeanUtils
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.NotSupportedException
-
 
 @Service
 open class DefaultCuroTaskService(
@@ -76,7 +78,8 @@ open class DefaultCuroTaskService(
 
         val description = filter.properties.getOrDefault("description", "") as String
         val refresh = filter.properties.getOrDefault("refresh", false) as Boolean
-        val properties = filter.properties.filterNot { it.key in arrayListOf("description", "refresh") }
+        val properties =
+            filter.properties.filterNot { it.key in arrayListOf("description", "refresh", "filterProperties") }
 
         var variablesToInclude = listOf<String>()
         when {
@@ -100,7 +103,8 @@ open class DefaultCuroTaskService(
 
         if (offset >= count) {
             return if (includeFilter) {
-                CuroFilterResponse(filter.name, description, refresh, properties, 0, arrayListOf())
+                val filterProperties = getFilterProperties(filter)
+                CuroFilterResponse(filter.name, description, refresh, properties, filterProperties, 0, arrayListOf())
             } else {
                 CuroFilterResponse(total = 0, items = arrayListOf())
             }
@@ -131,10 +135,36 @@ open class DefaultCuroTaskService(
         }
 
         return if (includeFilter) {
-            CuroFilterResponse(filter.name, description, refresh, properties, count, result)
+            val filterProperties = getFilterProperties(filter)
+            CuroFilterResponse(filter.name, description, refresh, properties, filterProperties, count, result)
         } else {
             CuroFilterResponse(total = count, items = result)
         }
+    }
+
+    private fun getFilterProperties(filter: Filter): List<CuroFilterResponse.FilterProperty>? {
+        val filterPropertiesMap = filter.properties.getOrDefault("filterProperties", null)
+        val filterProperties: List<CuroFilterResponse.FilterProperty>? = objectMapper.convertValue(
+            filterPropertiesMap,
+            objectMapper.typeFactory.constructCollectionType(
+                List::class.java,
+                CuroFilterResponse.FilterProperty::class.java
+            )
+        )
+        filterProperties?.map {
+            if (it.valuesGenerator?.isNotEmpty() == true) {
+                try {
+                    it.values = (SpringContext.getBean<FilterValueGenerator>(it.valuesGenerator!!)?.generate(filter))
+                        ?: arrayListOf()
+                    it.valuesGenerator = null
+                } catch (e: NoSuchBeanDefinitionException) {
+
+                }
+            }
+
+            it
+        }
+        return filterProperties
     }
 
     private fun checkFilterType(filter: Filter) {
@@ -469,7 +499,12 @@ open class DefaultCuroTaskService(
         response.status = HttpStatus.OK.value()
     }
 
-    override fun saveVariables(id: String, body: HashMap<String, Any?>?, files: Map<String, MultipartFile>?, response: HttpServletResponse) {
+    override fun saveVariables(
+        id: String,
+        body: HashMap<String, Any?>?,
+        files: Map<String, MultipartFile>?,
+        response: HttpServletResponse
+    ) {
         val task = getTask(id)
         //Check if user is assignee
         val currentUser = identityService.currentAuthentication

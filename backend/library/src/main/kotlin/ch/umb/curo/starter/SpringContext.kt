@@ -25,6 +25,10 @@ class SpringContext : ApplicationContextAware {
             return applicationContext?.getBean(beanClass)
         }
 
+        fun <T : Any?> getBean(beanClass: String): T? {
+            return applicationContext?.getBean(beanClass) as T
+        }
+
         fun <T : Any?> getBeans(beanClass: Class<T>): List<T?> {
             return try {
                 applicationContext?.getBeansOfType(beanClass)?.values?.toCollection(arrayListOf()) ?: listOf()
