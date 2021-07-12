@@ -3,6 +3,7 @@ plugins {
     id "java-library"
     id "maven-publish"
     id "signing"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
     id "org.jetbrains.kotlin.jvm" version "1.5.10"
     id "org.jetbrains.kotlin.plugin.jpa" version "1.5.10"
     id "org.springframework.boot" version "2.4.5"
@@ -106,18 +107,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 publishing {
-    repositories {
-        maven {
-            def releaseRepo = "https://repo.umb.cloud/repository/maven-curo-releases" //TODO: release to new nexus
-            def snapshotRepo = "" //TODO: release to new nexus
-            url = version.endsWith("SNAPSHOT") ? snapshotRepo : releaseRepo
-
-            credentials {
-                username = project.findProperty("nexusUser") ?: System.getenv("UMB_NEXUS_USER")
-                password = project.findProperty("nexusPassword")  ?: System.getenv("UMB_NEXUS_PASSWORD")
-            }
-        }
-    }
     publications {
         maven(MavenPublication) {
             from components.java
@@ -144,6 +133,20 @@ publishing {
 }
 
 signing {
-    required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
+    required { gradle.taskGraph.hasTask("publishToSonatype") }
+    def signingKey = findProperty("gpgPrivateKey") ?: System.getenv("GPG_PRIVATE_KEY")
+    def signingPassword = findProperty("gpgPassphrase") ?: System.getenv("GPG_PASSPHRASE")
+    useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.maven
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username = findProperty("osshrUsername") ?: System.getenv("OSSHR_USERNAME")
+            password = findProperty("osshrPassword") ?: System.getenv("OSSHR_PASSWORD")
+        }
+    }
 }
