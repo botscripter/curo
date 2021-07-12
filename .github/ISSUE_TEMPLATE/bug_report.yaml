@@ -2,11 +2,10 @@ name: Bug Report
 description: File a bug report
 title: "[Bug]: "
 labels: [bug]
-assignees: []
 body:
 - type: markdown
   attributes:
-    value: |
+    value: >
       Thanks for taking the time to fill out this bug report!
 - type: textarea
   id: description
