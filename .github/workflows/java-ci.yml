@@ -2,9 +2,6 @@ name: Java CI
 
 on:
   push:
-    paths:
-      - "backend**"
-      - ".github/workflows/java-ci.yml"
   workflow_dispatch:
 
 env:
@@ -15,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: library
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -43,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: libs
-          path: backend/demo/build/libs
+          path: library/build/libs
           if-no-files-found: error
           retention-days: 1
 
@@ -62,7 +59,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: libs
-          path: backend/demo/build/libs
+          path: demo/build/libs
       - name: Login to registry-curo.umb.cloud
         uses: docker/login-action@v1
         with:
@@ -72,8 +69,8 @@ jobs:
       - name: Push to registry-curo.umb.cloud
         uses: docker/build-push-action@v2
         with:
-          context: ./backend
-          file: ./backend/deployment/Dockerfile
+          context: ./
+          file: ./demo/deployment/Dockerfile
           push: true
           tags: registry-curo.umb.cloud/curo-reborn/backend:latest
 

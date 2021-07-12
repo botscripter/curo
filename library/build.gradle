@@ -1,0 +1,149 @@
+plugins {
+    id "idea"
+    id "java-library"
+    id "maven-publish"
+    id "signing"
+    id "org.jetbrains.kotlin.jvm" version "1.5.10"
+    id "org.jetbrains.kotlin.plugin.jpa" version "1.5.10"
+    id "org.springframework.boot" version "2.4.5"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+    id "org.jetbrains.kotlin.kapt" version "1.5.0"
+}
+
+group = "ch.umb.curo"
+version = "1.0.0-SNAPSHOT"
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+tasks.bootJar {enabled = false}
+tasks.jar {enabled = true}
+
+jar {
+    baseName "curo-spring-boot-starter"
+    manifest {
+        attributes "Implementation-Version": "${project.version}"
+    }
+    into("META-INF/maven/$project.group/curo-spring-boot-starter") {
+        from { generatePomFileForMavenPublication }
+        rename ".*", "pom.xml"
+    }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+ext {
+    isReleaseVersion = !version.endsWith("SNAPSHOT")
+    camundaVersion = "7.14.0"
+    javaJwtVersion = "3.16.0"
+    jwksRsaVersion = "0.18.0"
+    springdocOpenapiVersion = "1.5.9"
+    mockitoCoreVersion = "3.11.2"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.camunda.bpm:camunda-bom:$camundaVersion"
+    }
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+
+    kapt "org.springframework.boot:spring-boot-configuration-processor"
+
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-joda:2.12.3"
+
+    api "org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:$camundaVersion"
+    api "org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:$camundaVersion"
+    api "org.camunda.spin:camunda-spin-core:1.10.1"
+    api "org.camunda.spin:camunda-spin-dataformat-json-jackson:1.10.1"
+    api "org.camunda.bpm:camunda-engine-plugin-spin:$camundaVersion"
+
+    compileOnly "org.springdoc:springdoc-openapi-kotlin:$springdocOpenapiVersion"
+    compileOnly "org.springdoc:springdoc-openapi-ui:$springdocOpenapiVersion"
+    compileOnly "com.auth0:java-jwt:$javaJwtVersion"
+    compileOnly "com.auth0:jwks-rsa:$jwksRsaVersion"
+
+    compileOnly "org.mockito:mockito-core:$mockitoCoreVersion"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-web"
+    testImplementation "org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:$camundaVersion"
+    testImplementation "com.h2database:h2"
+    testImplementation "com.auth0:java-jwt:$javaJwtVersion"
+    testImplementation "com.auth0:jwks-rsa:$jwksRsaVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
+
+}
+
+compileJava {
+    doLast {
+        // Copy generated spring-configuration-metadata.json into jar resources
+        file("build/tmp/kapt3/classes/main/META-INF/spring-configuration-metadata.json").renameTo(file("build/resources/main/META-INF/spring-configuration-metadata.json"))
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            def releaseRepo = "https://repo.umb.cloud/repository/maven-curo-releases" //TODO: release to new nexus
+            def snapshotRepo = "" //TODO: release to new nexus
+            url = version.endsWith("SNAPSHOT") ? snapshotRepo : releaseRepo
+
+            credentials {
+                username = project.findProperty("nexusUser") ?: System.getenv("UMB_NEXUS_USER")
+                password = project.findProperty("nexusPassword")  ?: System.getenv("UMB_NEXUS_PASSWORD")
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifactId = "curo-spring-boot-starter"
+
+            pom {
+                name = "curo-spring-boot-starter"
+                description = "Best Open Source Camunda Development Starter Package"
+                url = "https://github.com/umb/curo"
+                licenses {
+                    license {
+                        name = "Apache-2.0 License"
+                        url = "https://github.com/umb/curo/blob/main/LICENSE"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/umb/curo.git"
+                    developerConnection = "scm:git:ssh://github.com/umb/curo.git"
+                    url = "https://github.com/umb/curo"
+                }
+            }
+        }
+    }
+}
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
+    sign publishing.publications.maven
+}

@@ -22,6 +22,10 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+### Gradle ###
+.gradle
+!gradle-wrapper.jar
+build
 
 ### IntelliJ IDEA ###
 .idea
@@ -30,13 +34,20 @@ hs_err_pid*
 *.ipr
 out/
 
-# IDE - VSCode
+### VS Code ###
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 # System Files
 .DS_Store

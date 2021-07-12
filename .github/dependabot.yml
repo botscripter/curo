@@ -14,7 +14,7 @@ updates:
 
   # Enable version updates for Gradle
   - package-ecosystem: "gradle"
-    directory: "/backend"
+    directory: "/"
     schedule:
       interval: "weekly"
       time: "06:00"
@@ -26,7 +26,7 @@ updates:
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
-    directory: "/backend/deployment"
+    directory: "/demo/deployment"
     schedule:
       interval: "weekly"
       time: "06:00"

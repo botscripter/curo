@@ -1,0 +1,77 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug]
+assignees:
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: How should it be?
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: What language are you using?
+      multiple: true
+      options:
+        - Java
+        - Kotlin
+    validations:
+      required: true
+  - type: dropdown
+    id: camunda-version
+    attributes:
+      label: Which Camunda version are you using?
+      options:
+        - 7.14
+        - 7.15
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: markdown
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Submission Guidelines
+      description: By submitting this issue, you agree to follow our [Submission Guidelines](https://github.com/umb/curo/blob/main/CONTRIBUTING.md#submit)
+      options:
+        - label: I agree to follow this project's Submission Guidelines
+          required: true

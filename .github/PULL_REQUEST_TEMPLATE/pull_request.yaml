@@ -1,0 +1,62 @@
+name: Pull Request
+body:
+  - type: checkboxes
+    id: pr-checklist
+    attributes:
+      label: PR Checklist
+      description: |
+        Please check if your PR fulfills the following requirements:
+      options:
+        - label: |
+            The commit message follows our guidelines: https://github.com/umb/curo/blob/main/CONTRIBUTING.md#commit
+          required: true
+        - label: Tests for the changes have been added (for bug fixes / features)
+          required: true
+        - label: Docs have been added / updated (for bug fixes / features)
+          required: true
+  - type: dropdown
+    id: pr-type
+    attributes:
+      label: PR Type
+      description: What kind of change does this PR introduce?
+      multiple: true
+      options:
+        - Bugfix
+        - Feature
+        - Code style update (formatting, local variables)
+        - Refactoring (no functional changes, no api changes)
+        - Build related changes
+        - CI related changes
+        - Documentation content changes
+        - Application / infrastructure changes
+        - Other
+    validations:
+      required: true
+  - type: markdown
+    id: description
+    attributes:
+      label: What is the current behavior?
+      description: A clear and concise description of the current behavior.
+    validations:
+      required: true
+  - type: markdown
+    id: solution
+    attributes:
+      label: What is the new behavior?
+      description: A clear and concise description of the new behavior.
+    validations:
+      required: true
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: Does this PR introduce a breaking change?
+      options:
+        - Yes
+        - No
+    validations:
+      required: true
+  - type: markdown
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the pull request here.
