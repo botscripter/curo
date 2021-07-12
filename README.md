@@ -10,7 +10,7 @@
   </p>
   <p>
     
-[![Maven Central](https://img.shields.io/maven-central/v/ch.umb.curo/spring-boot-curo-starter)](https://) [![Build Status](https://github.com/umb/curo/actions/workflows/release.yml/badge.svg)](https://github.com/umb/curo/actions/workflows/release.yml) [![GitHub release](https://img.shields.io/github/release/umb/curo/all?logo=GitHub)](https://github.com/umb/curo/releases/latest) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcuro.world)](https://curo.world) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![Donate on PayPal](https://img.shields.io/badge/support-PayPal-blue?logo=PayPal)](https://www.paypal.me/) [![Gitter](https://badges.gitter.im/curo-development/community.svg)](https://gitter.im/curo-development/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fcuro.world%2F)](https://twitter.com/)
+[![Maven Central](https://img.shields.io/maven-central/v/ch.umb.curo/spring-boot-curo-starter)](https://) [![Build Status](https://github.com/umb/curo/actions/workflows/release.yml/badge.svg)](https://github.com/umb/curo/actions/workflows/release.yml) [![GitHub release](https://img.shields.io/github/release/umb/curo/all?logo=GitHub)](https://github.com/umb/curo/releases/latest) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcuro.world)](https://umb.ch) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fcuro.world%2F)](https://twitter.com/)
 
   </p>
   <p>
@@ -22,33 +22,38 @@
 
 ---
 
-**Read: _[Story behind Curo](https://), [Fast Prototyping with Curo](https://)_**
-
-**Chat: _[Gitter](https://gitter.im/curo-development/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)_**
-
-**Donate: _[PayPal](https://www.paypal.me/)_**
+**Read: _[Story behind Curo](https://umb.ch), [Fast Prototyping with Curo](https://umb.ch)_**
 
 ### What is Curo 🙋
 The main purpose of Curo is to be the enabler of extrem fast development of your digital transformation with Camunda. Curo provides a modern Tasklist written in Angular and many other solutions for your daily Camunda development pains. 🥳
 
 ### Features ✨
 
-❤️ **Lightweight**: TExt
+#### Authentication / Authorization
+- BasicAuth & OAuth 2
+- Custom endpoint filter support
+- User & Group Federation
+- Login Success Interceptors
+#### REST-Endpoints
+- Better response objects
+- FlowToNext
+- Menu generation
+- Extending filter support
+- OpenApi-UI support
+- Business Logic Error
+#### Others
+- Initial data generation
+- Variable Helper
+- Variable Helper Mock
+- Camunda configuration
 
-⚡️ **Easy**: Text
-
-
-🌈 **Make it yours**: Customizable combinations for background, foreground and accent colors: because customization is freedom. [Customize now ✨](https://).
-
-**Customizations:**
- - Text
  
-## Demo 🚀 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcuro.world)](https://curo.world)
-[demo.curo.world](https://curo.world)
+## Demo 🚀
+coming soon
 
 ## Contributing 🍰
 
-Please read [CONTRIBUTING](CONTRIBUTING.md) for details on our [CODE OF CONDUCT](CODE_OF_CONDUCT.md), and the process for submitting pull requests to us.
+Please read [CONTRIBUTING](CONTRIBUTING.md) for details and the process for submitting pull requests to us.
 
 ## Continuous Integration 🔄 [![Build Status](https://github.com/umb/curo/actions/workflows/release.yml/badge.svg)](https://github.com/umb/curo/actions/workflows/release.yml)
 
