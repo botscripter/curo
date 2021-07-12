@@ -33,10 +33,10 @@ body:
     validations:
       required: true
   - type: markdown
-      id: additional-context
-      attributes:
-        label: Additional context
-        description: Add any other context or screenshots about the feature request here.
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
   - type: checkboxes
     id: terms
     attributes:
