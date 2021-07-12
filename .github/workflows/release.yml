@@ -11,7 +11,7 @@ env:
 
 jobs:
   backend:
-    name: Release Backend
+    name: Release Curo
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,8 +36,8 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Build with Gradle
         env:
-          OSSHR_USERNAME: ${{ secrets.OSSHR_USERNAME }}
-          OSSHR_PASSWORD: ${{ secrets.OSSHR_PASSWORD }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./gradlew clean publishToSonatype closeAndReleaseSonatypeStagingRepository
