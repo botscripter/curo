@@ -10,7 +10,7 @@
   </p>
   <p>
     
-[![Maven Central](https://img.shields.io/maven-central/v/ch.umb.curo/spring-boot-curo-starter)](https://) [![Build Status](https://github.com/umb/curo/actions/workflows/release.yml/badge.svg)](https://github.com/umb/curo/actions/workflows/release.yml) [![GitHub release](https://img.shields.io/github/release/umb/curo/all?logo=GitHub)](https://github.com/umb/curo/releases/latest) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcuro.world)](https://umb.ch) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fcuro.world%2F)](https://twitter.com/)
+[![Maven Central](https://img.shields.io/maven-central/v/ch.umb.curo/curo-spring-boot-starter)](https://) [![Build Status](https://github.com/umb/curo/actions/workflows/release.yml/badge.svg)](https://github.com/umb/curo/actions/workflows/release.yml) [![GitHub release](https://img.shields.io/github/release/umb/curo/all?logo=GitHub)](https://github.com/umb/curo/releases/latest) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fcuro.world)](https://umb.ch) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)](CONTRIBUTING.md) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fcuro.world%2F)](https://twitter.com/)
 
   </p>
   <p>
