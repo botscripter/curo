@@ -129,11 +129,12 @@ open class CuroOAuth2Authentication : AuthenticationProvider {
         val provider: JwkProvider = UrlJwkProvider(URL(jwkUrl))
         // Get the kid from received JWT token
         val jwk = provider[jwt.keyId]
-        val algorithm = when (jwk.algorithm) {
+        val alg = jwk.algorithm?: jwt.algorithm
+        val algorithm = when (alg) {
             "RS256" -> Algorithm.RSA256(jwk.publicKey as RSAPublicKey, null)
             "RS384" -> Algorithm.RSA384(jwk.publicKey as RSAPublicKey, null)
             "RS512" -> Algorithm.RSA512(jwk.publicKey as RSAPublicKey, null)
-            else -> throw AlgorithmMismatchException("Unknown algorithm ${jwk.algorithm}")
+            else -> throw AlgorithmMismatchException("Unknown algorithm $alg")
         }
 
         val verifier: JWTVerifier = JWT.require(algorithm)
