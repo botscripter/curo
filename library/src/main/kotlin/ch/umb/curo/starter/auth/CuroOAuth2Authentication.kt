@@ -129,7 +129,15 @@ open class CuroOAuth2Authentication : AuthenticationProvider {
         val provider: JwkProvider = UrlJwkProvider(URL(jwkUrl))
         // Get the kid from received JWT token
         val jwk = provider[jwt.keyId]
-        val alg = jwk.algorithm?: jwt.algorithm
+        val alg = when {
+            properties.auth.oauth2.useDefaultAlgorithm -> properties.auth.oauth2.defaultAlgorithm
+            jwk.algorithm != null -> jwk.algorithm
+            jwk.algorithm == null && properties.auth.oauth2.allowAlgorithmFallbackToJWTClaim -> {
+                logger.warn("Using 'alg' claim of jwt is a potential security risk. Use this only if not other possible.")
+                jwt.algorithm
+            }
+            else -> throw AlgorithmMismatchException("Could not extract algorithm")
+        }
         val algorithm = when (alg) {
             "RS256" -> Algorithm.RSA256(jwk.publicKey as RSAPublicKey, null)
             "RS384" -> Algorithm.RSA384(jwk.publicKey as RSAPublicKey, null)
